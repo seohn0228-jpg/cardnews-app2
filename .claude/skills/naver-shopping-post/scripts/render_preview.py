@@ -83,7 +83,8 @@ def render_body(lines: list[str], photos_dir: Path, link: str) -> tuple[str, lis
                 continue
             cap = f"<figcaption>{inline(caption)}</figcaption>" if caption else ""
             alt = inline(caption or f"사진 {n}")
-            out.append(f'<figure data-n="{n}"><img src="{uri}" alt="{alt}">{cap}</figure>')
+            out.append(f'<figure data-n="{n}" data-caption="{html.escape(caption, quote=True)}"><img src="{uri}" alt="{alt}">{cap}</figure>'
+                       f'<button class="save-photo" type="button" data-n="{n}" hidden>사진 {n} 저장</button>')
         elif LINK_RE.match(stripped):
             flush_para(); flush_list()
             label = (LINK_RE.match(stripped).group(1) or "").strip() or "👉 상품 페이지 바로가기"
@@ -148,6 +149,8 @@ article h2 { font-size: 19px; margin: 1.9em 0 .7em; padding-bottom: 6px; border-
 article ul, article ol { margin: 0 0 1.1em; padding-left: 1.3em }
 figure { margin: 1.4em 0; text-align: center }
 figure img { width: 100%; max-width: 100%; height: auto; border-radius: 6px; display: block }
+.save-photo { display: block; margin: -0.6em auto 1.4em; font-size: 14px; padding: 6px 12px }
+.copy-stage { position: fixed; left: -9999px; top: 0; width: 600px }
 figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
 .disclosure { margin: 0 0 1.6em }
 .product-link { margin: 1.4em 0; text-align: center }
@@ -163,15 +166,17 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
   <section class="tools" aria-label="발행 도구">
     <h1>발행 준비 · 사진 __PHOTO_COUNT__장 배치 완료</h1>
     <div class="row">
-      <button class="primary" id="copy-body" type="button">본문 복사 (사진 포함)</button>
+      <button class="primary" id="copy-body" type="button">본문 복사</button>
+      <button class="primary" id="save-all" type="button" hidden>사진 __PHOTO_COUNT__장 저장</button>
       <button id="copy-title" type="button">제목 복사</button>
       <button id="copy-tags" type="button">태그 복사</button>
       <button id="copy-link" type="button">상품 링크 복사</button>
     </div>
     <p class="status" id="status" role="status"></p>
     <ol class="steps">
-      <li><b>PC</b>: 블로그 글쓰기를 열고 제목 복사 → 붙여넣기, 본문 복사 → 본문에 붙여넣기. 사진이 같이 들어가는지 확인하세요.</li>
-      <li><b>사진이 빠지면</b>: 아래 원고의 사진을 길게 누르거나 우클릭해 저장한 뒤, 같은 자리에 넣으면 됩니다.</li>
+      <li><b>사진 저장</b>: '사진 __PHOTO_COUNT__장 저장'을 눌러 휴대폰에 저장해요(사진마다 저장 창이 떠요). 버튼이 안 보이면 아래 사진을 길게 눌러 저장하세요.</li>
+      <li><b>글 붙여넣기</b>: 블로그 글쓰기에서 제목 복사 → 붙여넣기, 본문 복사 → 본문에 붙여넣기.</li>
+      <li><b>사진 넣기</b>: 본문의 <b>📷 사진 N</b> 줄을 지우고 그 자리에 같은 번호 사진을 넣어요. 저장된 사진 이름도 photo_01, photo_02… 순서예요.</li>
       <li>👉 링크 안내 __CTA_COUNT__곳 밑에 상품 주소가 한 줄씩 들어가 있어요. 블로그에 붙여넣으면 주소가 링크로 바뀌는지 확인하고, 글자로만 남아 있으면 주소 끝에 커서를 두고 엔터를 한 번 눌러 주세요.</li>
       <li>태그를 붙여넣고 <b>발행은 직접</b> 눌러 주세요.</li>
     </ol>
@@ -207,8 +212,27 @@ document.getElementById("copy-title").addEventListener("click", () => copyText(d
 document.getElementById("copy-tags").addEventListener("click", () => copyText(TAGS.map(t => "#" + t).join(" "), "태그"));
 document.getElementById("copy-link").addEventListener("click", () => copyText(LINK, "상품 링크"));
 
+// 네이버 에디터는 페이지 안에 들어 있는 사진을 붙여넣지 못한다.
+// 그래서 복사본에서는 사진 자리를 '📷 사진 N' 줄로 바꿔, 어디에 넣을지 보이게 한다.
+function buildCopyNode() {
+  const clone = document.getElementById("post-body").cloneNode(true);
+  clone.querySelectorAll(".save-photo").forEach(b => b.remove());
+  clone.querySelectorAll("figure").forEach(fig => {
+    const p = document.createElement("p");
+    p.setAttribute("style", "text-align:center;color:#1f7a53;font-weight:700");
+    const cap = fig.dataset.caption ? " · " + fig.dataset.caption : "";
+    p.textContent = "📷 사진 " + fig.dataset.n + cap;
+    fig.replaceWith(p);
+  });
+  const stage = document.createElement("div");
+  stage.className = "copy-stage"; stage.appendChild(clone);
+  document.body.appendChild(stage);
+  return stage;
+}
+
 document.getElementById("copy-body").addEventListener("click", async () => {
-  const body = document.getElementById("post-body");
+  const stage = buildCopyNode();
+  const body = stage.firstChild;
   const htmlText = body.innerHTML;
   const plain = body.innerText;
   try {
@@ -217,13 +241,51 @@ document.getElementById("copy-body").addEventListener("click", async () => {
       "text/html": new Blob([htmlText], { type: "text/html" }),
       "text/plain": new Blob([plain], { type: "text/plain" }),
     })]);
-    say("본문 복사됨 (사진 포함). 블로그 본문에 붙여넣어 보세요.");
+    say("본문 복사됨. 붙여넣은 뒤 📷 사진 N 자리에 사진을 넣어 주세요.");
+    stage.remove();
   } catch (e) {
     selectNode(body);
-    try { if (document.execCommand("copy")) { say("본문 복사됨 (사진 포함). 블로그 본문에 붙여넣어 보세요."); return; } } catch (_) {}
+    try { if (document.execCommand("copy")) { say("본문 복사됨. 붙여넣은 뒤 📷 사진 N 자리에 사진을 넣어 주세요."); stage.remove(); return; } } catch (_) {}
+    stage.remove();
+    selectNode(document.getElementById("post-body"));
     say("자동 복사가 막혀 있어요. 원고가 선택돼 있으니 직접 복사해 주세요.");
   }
 });
+
+function photoBlob(n) {
+  const img = document.querySelector(`figure[data-n="${n}"] img`);
+  const b64 = img.src.split(",")[1];
+  const bin = atob(b64); const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: "image/jpeg" });
+}
+const fname = n => "photo_" + String(n).padStart(2, "0") + ".jpg";
+
+let downloads = null;
+async function savePhoto(n) {
+  try { await downloads.save({ filename: fname(n), data: photoBlob(n) }); return true; }
+  catch (e) {
+    if (e && e.code === "declined") { say("사진 " + n + " 저장을 취소했어요."); return false; }
+    if (e && e.code === "rate_limited") { say("저장 창이 이미 열려 있어요. 잠시 뒤 다시 눌러 주세요."); return false; }
+    say("이 화면에서는 저장할 수 없어요. 사진을 길게 눌러 저장해 주세요."); return false;
+  }
+}
+(async () => {
+  try { downloads = await window.claude?.use?.("downloads"); } catch (e) { downloads = null; }
+  if (!downloads) return;
+  document.querySelectorAll(".save-photo").forEach(b => {
+    b.hidden = false;
+    b.addEventListener("click", async () => { if (await savePhoto(b.dataset.n)) say("사진 " + b.dataset.n + " 저장됨"); });
+  });
+  const all = document.getElementById("save-all");
+  all.hidden = false;
+  all.addEventListener("click", async () => {
+    const ns = [...document.querySelectorAll("figure[data-n]")].map(f => f.dataset.n);
+    let ok = 0;
+    for (const n of ns) { say("사진 " + n + " / " + ns.length + " 저장 중..."); if (await savePhoto(n)) ok++; else break; }
+    if (ok === ns.length) say("사진 " + ok + "장 모두 저장했어요.");
+  });
+})();
 </script>
 """
 
