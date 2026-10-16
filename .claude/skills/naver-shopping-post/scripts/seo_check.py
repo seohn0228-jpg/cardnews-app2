@@ -82,7 +82,7 @@ def check(text: str, keyword: str, subs: list[str]) -> list[dict]:
         add(f"서브 키워드 '{sub}'", n >= 1, f"{n}회", "권장")
 
     add("소제목 수", 3 <= len(p["headings"]) <= 7, f"{len(p['headings'])}개 (권장 3~7개)", "권장")
-    add("사진 수", len(p["photos"]) >= 4, f"{len(p['photos'])}장 (권장 4장 이상, 직접 찍은 사진이 가장 좋음)", "권장")
+    add("사진 수", 4 <= len(p["photos"]) <= 5, f"{len(p['photos'])}장 (4~5장, 핵심 포인트만)")
     add("상품 링크 안내", 2 <= len(p["links"]) <= 4, f"{len(p['links'])}곳 (권장 3곳: 소개 직후, 가격/단점 직후, 마지막)", "권장")
     labels = [LINK_RE.match(l.strip()) and l.strip() for l in p["links"]]
     if len(labels) != len(set(labels)):
