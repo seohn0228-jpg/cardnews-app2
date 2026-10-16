@@ -194,7 +194,8 @@ __BODY__
 
 <script>
 const TAGS = __TAGS_JSON__;
-const HAS_URLS = !!document.querySelector("figure[data-src]");
+const KEEP_EMBEDDED = true;
+const HAS_URLS = KEEP_EMBEDDED || !!document.querySelector("figure[data-src]");
 const LINK = __LINK_JSON__;
 const statusEl = document.getElementById("status");
 function say(msg) { statusEl.textContent = msg; }
@@ -221,6 +222,12 @@ function buildCopyNode() {
   clone.querySelectorAll(".save-photo").forEach(b => b.remove());
   clone.querySelectorAll("figure").forEach(fig => {
     const cap = fig.dataset.caption || "";
+    if (KEEP_EMBEDDED) {
+      // 처음 방식: 페이지 안의 사진을 그대로 복사한다 (사용자 확인: 이 방식이 앱에 잘 붙었음)
+      fig.setAttribute("style", "text-align:center;margin:16px 0");
+      const img = fig.querySelector("img"); if (img) img.setAttribute("style", "max-width:100%");
+      return;
+    }
     if (fig.dataset.src) {
       // 공개 주소의 사진은 네이버 에디터가 받아서 본문에 넣어 준다.
       const wrap = document.createElement("div");
