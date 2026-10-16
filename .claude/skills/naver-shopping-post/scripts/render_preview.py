@@ -172,14 +172,14 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
     <h1>발행 준비 · 사진 __PHOTO_COUNT__장 배치 완료</h1>
     <div class="row">
       <button class="primary" id="copy-body" type="button">본문 복사</button>
-      <button class="primary" id="save-all" type="button" hidden>사진 __PHOTO_COUNT__장 저장</button>
+      <button class="primary" id="save-all" type="button" hidden>사진 __PHOTO_COUNT__장 한 번에 저장</button>
       <button id="copy-title" type="button">제목 복사</button>
       <button id="copy-tags" type="button">태그 복사</button>
       <button id="copy-link" type="button">상품 링크 복사</button>
     </div>
     <p class="status" id="status" role="status"></p>
     <ol class="steps">
-      <li><b>사진 저장</b>: '사진 __PHOTO_COUNT__장 저장'을 눌러 휴대폰에 저장해요(사진마다 저장 창이 떠요). 버튼이 안 보이면 아래 사진을 길게 눌러 저장하세요.</li>
+      <li><b>사진 저장</b>: '사진 __PHOTO_COUNT__장 한 번에 저장'을 누르면 사진이 압축 파일 하나로 저장돼요. 아이폰은 파일 앱에서 그 파일을 누르면 폴더로 풀리고, 사진을 모두 선택 → 공유 → '이미지 저장'하면 사진첩에 들어가요. 버튼이 안 보이면 아래 사진을 길게 눌러 저장하세요.</li>
       <li><b>글 붙여넣기</b>: 블로그 글쓰기에서 제목 복사 → 붙여넣기, 본문 복사 → 본문에 붙여넣기.</li>
       <li><b>사진 넣기</b>: 붙여넣은 본문에 <b>📷 [사진 N] 여기에 photo_0N 넣기</b> 줄이 보여요. 그 줄을 지우고 같은 번호 사진을 넣으면 돼요.</li>
       <li>👉 링크 안내 __CTA_COUNT__곳 밑에 상품 주소가 한 줄씩 들어가 있어요. 블로그에 붙여넣으면 주소가 링크로 바뀌는지 확인하고, 글자로만 남아 있으면 주소 끝에 커서를 두고 엔터를 한 번 눌러 주세요.</li>
@@ -291,6 +291,34 @@ function photoBlob(n) {
   return new Blob([bytes], { type: "image/jpeg" });
 }
 const fname = n => "photo_" + String(n).padStart(2, "0") + ".jpg";
+const ZIP_NAME = __ZIP_NAME_JSON__;
+
+// 압축 없이 묶기만 하는 ZIP (사진은 이미 압축돼 있어 충분하다)
+const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function makeZip(files) {
+  const enc = new TextEncoder(); const parts = []; const central = []; let offset = 0;
+  for (const f of files) {
+    const name = enc.encode(f.name); const crc = crc32(f.bytes); const size = f.bytes.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, 0, true); lh.setUint16(12, 0x21, true); lh.setUint32(14, crc, true); lh.setUint32(18, size, true);
+    lh.setUint32(22, size, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    parts.push(new Uint8Array(lh.buffer), name, f.bytes);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+    ch.setUint16(10, 0, true); ch.setUint16(12, 0, true); ch.setUint16(14, 0x21, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, size, true); ch.setUint32(24, size, true); ch.setUint16(28, name.length, true);
+    ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + size;
+  }
+  const cdSize = central.reduce((a, b) => a + b.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: "application/zip" });
+}
 
 let downloads = null;
 async function savePhoto(n) {
@@ -311,10 +339,18 @@ async function savePhoto(n) {
   const all = document.getElementById("save-all");
   all.hidden = false;
   all.addEventListener("click", async () => {
-    const ns = [...document.querySelectorAll("figure[data-n]")].map(f => f.dataset.n);
-    let ok = 0;
-    for (const n of ns) { say("사진 " + n + " / " + ns.length + " 저장 중..."); if (await savePhoto(n)) ok++; else break; }
-    if (ok === ns.length) say("사진 " + ok + "장 모두 저장했어요.");
+    // 사진을 압축 파일 하나로 묶어 한 번에 저장한다 (저장 확인도 한 번).
+    const figs = [...document.querySelectorAll("figure[data-n]")];
+    const files = [];
+    for (const f of figs) files.push({ name: fname(f.dataset.n), bytes: new Uint8Array(await photoBlob(f.dataset.n).arrayBuffer()) });
+    try {
+      await downloads.save({ filename: ZIP_NAME, data: makeZip(files) });
+      say("사진 " + files.length + "장을 " + ZIP_NAME + " 하나로 저장했어요. 파일 앱에서 눌러 풀면 사진이 나와요.");
+    } catch (e) {
+      if (e && e.code === "declined") { say("저장을 취소했어요."); return; }
+      if (e && e.code === "rate_limited") { say("저장 창이 이미 열려 있어요. 잠시 뒤 다시 눌러 주세요."); return; }
+      say("한 번에 저장이 안 돼요. 사진 아래 '사진 N 저장' 버튼을 써 주세요.");
+    }
   });
 })();
 </script>
@@ -385,6 +421,7 @@ def main() -> int:
             .replace("__TAG_CHIPS__", "".join(f"<span>#{html.escape(t)}</span>" for t in tags))
             .replace("__TAGS_JSON__", json.dumps(tags, ensure_ascii=False))
             .replace("__LINK_JSON__", json.dumps(args.link, ensure_ascii=False))
+            .replace("__ZIP_NAME_JSON__", json.dumps(post_dir.resolve().name + "_photos.zip"))
             .replace("__BODY__", body))
     out = post_dir / "preview.html"
     out.write_text(page, encoding="utf-8")
