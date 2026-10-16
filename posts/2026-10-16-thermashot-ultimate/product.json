@@ -1,0 +1,20 @@
+{
+  "link": "https://naver.me/GCJioDQv",
+  "resolved": "https://smartstore.naver.com/main/products/12533459263",
+  "note": "스마트스토어가 서버 접속을 막아(429) LG 프라엘 공식몰 상세페이지와 LG 보도자료(2025.10.15)로 정보를 확인함",
+  "product_name": "LG 프라엘 수퍼폼 써마샷 얼티밋",
+  "price": {"권장소비자가": "599,000원", "공식몰 할인가(2026-10-16)": "539,000원"},
+  "specs": {"크기": "36.5 x 43 x 178 mm", "무게": "197g(캡 포함)", "배터리": "리튬이온 800mAh, 완충 최대 2시간", "모델명": "SPD-002", "제조국": "중국", "보증": "1년"},
+  "features": ["16개 주파수 고주파(RF)", "EP·MC·EMS 기능", "5가지 모드(GLOW/FIRM/JAW/PORE/EYE), 5단계 강도", "3중 센서(온도·움직임·접촉)", "SUS 소재 곡선형 헤드", "1분 진동 알림, LG Pra.L 앱 연동"],
+  "cautions": ["1일 1회 부위별 5분, 하루 최대 1~2모드", "방수 아님(물세척 불가)", "충전 중 사용 불가", "기초 제품 도포 후 사용", "의료기기 아님, 상처·여드름 부위 사용 금지"],
+  "sources": ["https://lgpralofficial.co.kr/product/detail.html?product_no=175", "https://www.lg.co.kr/media/release/29461"],
+  "photos": {
+    "photo_01.png": "스마트스토어 대표 이미지(캡 닫힘/열림)",
+    "photo_02.jpg": "공식몰 제품 이미지",
+    "photo_03.jpg": "5가지 모드 5단계(손에 든 모습)",
+    "photo_04.jpg": "추천 조합 GLOW+PORE / FIRM+JAW",
+    "photo_05.jpg": "안전 설계 3중 센서",
+    "photo_06.jpg": "곡선형 헤드",
+    "photo_07.jpg": "사용법 HOW TO USE"
+  }
+}
