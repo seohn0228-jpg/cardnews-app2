@@ -88,7 +88,10 @@ def render_body(lines: list[str], photos_dir: Path, link: str) -> tuple[str, lis
             flush_para(); flush_list()
             label = (LINK_RE.match(stripped).group(1) or "").strip() or "👉 상품 페이지 바로가기"
             safe = html.escape(link, quote=True)
-            out.append(f'<p class="product-link"><a href="{safe}" target="_blank" rel="noopener"><b>{inline(label)}</b></a></p>')
+            # 네이버 에디터는 붙여넣을 때 글자에 걸린 링크를 지우는 경우가 많다.
+            # 주소를 글자 그대로 한 줄 넣어 두면 에디터가 알아서 링크로 바꿔 준다.
+            out.append(f'<p class="product-link" style="text-align:center"><b>{inline(label)}</b><br>'
+                       f'<a href="{safe}" target="_blank" rel="noopener">{inline(link)}</a></p>')
         elif stripped.startswith("## "):
             flush_para(); flush_list()
             out.append(f'<h2 style="text-align:center">{inline(stripped[3:])}</h2>')
@@ -148,7 +151,8 @@ figure img { width: 100%; max-width: 100%; height: auto; border-radius: 6px; dis
 figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
 .disclosure { margin: 0 0 1.6em }
 .product-link { margin: 1.4em 0; text-align: center }
-.product-link a { display: inline-block; color: var(--accent); background: var(--soft); border-radius: 8px; padding: 10px 16px; text-decoration: none; word-break: keep-all }
+.product-link b { color: var(--ink) }
+.product-link a { color: var(--accent); word-break: break-all }
 .missing { color: #c0392b }
 .tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 26px }
 .tags span { background: var(--soft); border-radius: 999px; padding: 3px 10px; font-size: 14px }
@@ -168,7 +172,7 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
     <ol class="steps">
       <li><b>PC</b>: 블로그 글쓰기를 열고 제목 복사 → 붙여넣기, 본문 복사 → 본문에 붙여넣기. 사진이 같이 들어가는지 확인하세요.</li>
       <li><b>사진이 빠지면</b>: 아래 원고의 사진을 길게 누르거나 우클릭해 저장한 뒤, 같은 자리에 넣으면 됩니다.</li>
-      <li>본문의 👉 링크 안내 __CTA_COUNT__곳에 상품 링크가 걸렸는지 확인하세요. 안 걸렸으면 문구를 선택하고 '상품 링크 복사'로 링크를 넣으면 돼요.</li>
+      <li>👉 링크 안내 __CTA_COUNT__곳 밑에 상품 주소가 한 줄씩 들어가 있어요. 블로그에 붙여넣으면 주소가 링크로 바뀌는지 확인하고, 글자로만 남아 있으면 주소 끝에 커서를 두고 엔터를 한 번 눌러 주세요.</li>
       <li>태그를 붙여넣고 <b>발행은 직접</b> 눌러 주세요.</li>
     </ol>
   </section>
