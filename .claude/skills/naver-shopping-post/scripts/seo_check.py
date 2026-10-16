@@ -52,9 +52,7 @@ def check(text: str, keyword: str, subs: list[str]) -> list[dict]:
     def add(name, ok, detail, level="필수"):
         results.append({"항목": name, "결과": "통과" if ok else ("확인" if level == "권장" else "수정 필요"), "내용": detail})
 
-    has_ad = p["title"].startswith("[광고]")
-    add("제목 앞 [광고] 표기", has_ad, "있음" if has_ad else "제목을 '[광고] '로 시작해야 합니다")
-    title = p["title"][len("[광고]"):].strip() if has_ad else p["title"]
+    title = p["title"]
     add("제목 길이", 20 <= len(title) <= 40, f"{len(title)}자 (권장 20~40자)", "권장")
     kw_pos = title.replace(" ", "").find(keyword.replace(" ", ""))
     add("제목에 메인 키워드", kw_pos >= 0, "포함" if kw_pos >= 0 else "제목에 메인 키워드가 없습니다")
@@ -65,8 +63,10 @@ def check(text: str, keyword: str, subs: list[str]) -> list[dict]:
     first_line = next((l.strip() for l in p["lines"] if l.strip()), "")
     if any(h in first_line for h in DISCLOSURE_HINTS):
         add("대가성 문구(최상단)", True, "제목 바로 아래 첫 줄에 있음")
+    elif title.startswith("[광고]"):
+        add("대가성 문구(최상단)", True, "제목 앞 [광고] 표기")
     else:
-        add("대가성 문구(최상단)", False, "제목 바로 아래 첫 줄에 대가성 문구 상자를 넣어야 합니다")
+        add("대가성 문구(최상단)", False, "제목 바로 아래 첫 줄에 대가성 문구를 넣거나 제목 앞에 [광고]를 붙여야 합니다")
 
     length = len(p["prose"].replace("\n", ""))
     add("본문 길이", 1500 <= length <= 3500, f"공백 포함 {length:,}자 (권장 1,500~3,500자)", "권장")
