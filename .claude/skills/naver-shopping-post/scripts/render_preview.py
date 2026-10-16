@@ -17,6 +17,8 @@ from pathlib import Path
 
 from PIL import Image
 
+# 네이버 앱은 붙여넣을 때 서식(hr, 색, 상자)을 버리는 경우가 많아서, 글자로 된 구분선을 쓴다.
+HR_HTML = '<p class="divider" style="text-align:center;color:#bbbbbb;letter-spacing:2px;margin:28px 0">──────</p>'
 PHOTO_RE = re.compile(r"^\[사진\s*(\d+)\s*(?::\s*(.*?))?\]\s*$")
 LINK_RE = re.compile(r"^\[상품\s*링크\s*(?::\s*(.*?))?\]\s*$")
 MAX_WIDTH = 900
@@ -96,6 +98,7 @@ def render_body(lines: list[str], photos_dir: Path, link: str, photo_urls: dict[
                        f'<a href="{safe}" target="_blank" rel="noopener">{inline(link)}</a></p>')
         elif stripped.startswith("## "):
             flush_para(); flush_list()
+            out.append(HR_HTML)  # 소제목마다 짧은 가운데 구분선 (네이버 구분선처럼)
             out.append(f'<h2 style="text-align:center">{inline(stripped[3:])}</h2>')
         elif ul or ol:
             flush_para()
@@ -154,6 +157,7 @@ figure img { width: 100%; max-width: 100%; height: auto; border-radius: 6px; dis
 .copy-stage { position: fixed; left: -9999px; top: 0; width: 600px }
 figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
 .disclosure { margin: 0 0 1.6em }
+.divider { color: var(--line) !important }
 .product-link { margin: 1.4em 0; text-align: center }
 .product-link b { color: var(--ink) }
 .product-link a { color: var(--accent); word-break: break-all }
@@ -365,7 +369,10 @@ def main() -> int:
     # 네이버 앱은 복사한 사진을 받지 못한다(사용자 확인). 기본은 사진 자리 표시 + 사진 저장 버튼.
     photo_urls = public_photo_urls(post_dir) if args.public_photos else {}
     body, missing = render_body(body_lines, post_dir / "photos", args.link or "[상품 링크]", photo_urls)
-    body = body.replace('<p style="text-align:center">이 포스팅은', '<p class="disclosure" style="margin:0 0 24px;padding:14px 12px;border:2px solid #e8590c;border-radius:4px;color:#e8590c;font-size:18px;font-weight:700;line-height:1.6;text-align:center">이 포스팅은', 1)
+    body = body.replace('<p style="text-align:center">이 포스팅은', HR_HTML + '<p class="disclosure" style="margin:0 0 24px;padding:14px 12px;border:2px solid #e8590c;border-radius:4px;color:#e8590c;font-size:18px;font-weight:700;line-height:1.6;text-align:center">이 포스팅은', 1)
+    k = body.find('</p>', body.find('class="disclosure"'))
+    if k != -1:
+        body = body[:k + 4] + HR_HTML + body[k + 4:]
     photo_count = body.count("<figure")
     cta_count = body.count('class="product-link"')
 
