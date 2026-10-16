@@ -60,7 +60,13 @@ def check(text: str, keyword: str, subs: list[str]) -> list[dict]:
         add("메인 키워드 위치", kw_pos <= 10, f"앞에서 {kw_pos}번째 글자 (앞쪽일수록 좋음)", "권장")
 
     head = "\n".join(p["lines"][:6])
-    add("대가성 문구(상단)", any(h in head for h in DISCLOSURE_HINTS), "본문 맨 위에 수수료 안내가 있어야 합니다")
+    first_line = next((l.strip() for l in p["lines"] if l.strip()), "")
+    if any(h in first_line for h in DISCLOSURE_HINTS):
+        add("대가성 문구(최상단)", True, "제목 바로 아래 첫 줄에 있음")
+    elif title.startswith("[광고]"):
+        add("대가성 문구(최상단)", True, "제목 앞 [광고] 표기")
+    else:
+        add("대가성 문구(최상단)", False, "제목 바로 아래 첫 줄에 대가성 문구를 넣거나 제목 앞에 [광고]를 붙여야 합니다")
 
     length = len(p["prose"].replace("\n", ""))
     add("본문 길이", 1500 <= length <= 3500, f"공백 포함 {length:,}자 (권장 1,500~3,500자)", "권장")
