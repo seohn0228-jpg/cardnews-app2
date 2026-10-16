@@ -66,7 +66,7 @@ button { font: inherit; cursor: pointer; border-radius: 10px }
 <div class="wrap">
   <header>
     <h1>쇼핑커넥트 글쓰기</h1>
-    <p>링크를 넣으면 원고, 사진 배치, 키워드, SEO 점검까지 만들어 드려요.</p>
+    <p>링크를 넣으면 원고, 사진 배치, 본문 속 링크 안내, 키워드, SEO 점검까지 만들어 드려요.</p>
   </header>
 
   <form class="card" id="form" novalidate>
@@ -145,6 +145,7 @@ function buildPrompt(link, memo) {
     memo ? "써본 느낌: " + memo : "",
     "",
     "(휴대폰 앱에서 보낸 요청이야. 중간에 질문하지 말고 naver-shopping-post 스킬 절차대로 끝까지 진행해 줘.",
+    "본문 중간중간 상품 링크 안내 3곳을 흐름에 맞게 꼭 넣어 줘.",
     "사진 배치 미리보기 페이지를 Artifact로 발행하고, 마지막 답변 첫 줄에 그 링크를 꼭 적어 줘.)"
   ].filter(Boolean).join("\n");
 }
