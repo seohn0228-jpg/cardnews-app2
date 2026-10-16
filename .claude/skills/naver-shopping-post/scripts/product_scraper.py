@@ -4,8 +4,11 @@
 가져온 만큼만 돌려주고 나머지는 사용자가 직접 붙여넣게 한다.
 """
 
+import argparse
 import json
 import re
+import sys
+from pathlib import Path
 from dataclasses import dataclass, field
 from urllib.parse import urljoin
 
@@ -109,5 +112,31 @@ def download_image(url: str, timeout: float = 10.0) -> bytes | None:
         return None
 
 
-def to_json(info: ProductInfo) -> str:
-    return json.dumps(info.__dict__, ensure_ascii=False)
+def main() -> int:
+    parser = argparse.ArgumentParser(description="상품 페이지에서 정보와 사진을 가져온다")
+    parser.add_argument("url")
+    parser.add_argument("--out", required=True, help="결과 폴더 (product.json, photos/ 저장)")
+    args = parser.parse_args()
+
+    out = Path(args.out)
+    (out / "photos").mkdir(parents=True, exist_ok=True)
+    info = fetch_product(args.url)
+
+    saved = []
+    for i, img_url in enumerate(info.images, start=1):
+        data = download_image(img_url)
+        if not data:
+            continue
+        ext = ".png" if data.startswith(b"\x89PNG") else ".jpg"
+        path = out / "photos" / f"photo_{i:02d}{ext}"
+        path.write_bytes(data)
+        saved.append(str(path))
+
+    result = {**info.__dict__, "saved_photos": saved}
+    (out / "product.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 1 if info.error and not saved else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
