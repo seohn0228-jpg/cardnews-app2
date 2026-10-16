@@ -45,7 +45,7 @@ def inline(text: str) -> str:
     return html.escape(text)
 
 
-def render_body(lines: list[str], photos_dir: Path, link: str) -> tuple[str, list[str]]:
+def render_body(lines: list[str], photos_dir: Path, link: str, photo_urls: dict[int, str] | None = None) -> tuple[str, list[str]]:
     """본문 줄들을 HTML로 바꾼다. 빠진 사진 번호 목록도 함께 돌려준다."""
     out, missing = [], []
     para: list[str] = []
@@ -83,7 +83,8 @@ def render_body(lines: list[str], photos_dir: Path, link: str) -> tuple[str, lis
                 continue
             cap = f"<figcaption>{inline(caption)}</figcaption>" if caption else ""
             alt = inline(caption or f"사진 {n}")
-            out.append(f'<figure data-n="{n}" data-caption="{html.escape(caption, quote=True)}"><img src="{uri}" alt="{alt}">{cap}</figure>'
+            src_attr = f' data-src="{html.escape(photo_urls[n], quote=True)}"' if photo_urls and n in photo_urls else ""
+            out.append(f'<figure data-n="{n}"{src_attr} data-caption="{html.escape(caption, quote=True)}"><img src="{uri}" alt="{alt}">{cap}</figure>'
                        f'<button class="save-photo" type="button" data-n="{n}" hidden>사진 {n} 저장</button>')
         elif LINK_RE.match(stripped):
             flush_para(); flush_list()
@@ -176,7 +177,7 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
     <ol class="steps">
       <li><b>사진 저장</b>: '사진 __PHOTO_COUNT__장 저장'을 눌러 휴대폰에 저장해요(사진마다 저장 창이 떠요). 버튼이 안 보이면 아래 사진을 길게 눌러 저장하세요.</li>
       <li><b>글 붙여넣기</b>: 블로그 글쓰기에서 제목 복사 → 붙여넣기, 본문 복사 → 본문에 붙여넣기.</li>
-      <li><b>사진 넣기</b>: 본문의 <b>📷 사진 N</b> 줄을 지우고 그 자리에 같은 번호 사진을 넣어요. 저장된 사진 이름도 photo_01, photo_02… 순서예요.</li>
+      <li><b>사진</b>: 본문 복사에 사진이 같이 들어가요. 붙여넣은 뒤 사진이 빠진 자리가 있으면, 저장한 같은 번호 사진(photo_01, photo_02…)을 그 자리에 넣어 주세요.</li>
       <li>👉 링크 안내 __CTA_COUNT__곳 밑에 상품 주소가 한 줄씩 들어가 있어요. 블로그에 붙여넣으면 주소가 링크로 바뀌는지 확인하고, 글자로만 남아 있으면 주소 끝에 커서를 두고 엔터를 한 번 눌러 주세요.</li>
       <li>태그를 붙여넣고 <b>발행은 직접</b> 눌러 주세요.</li>
     </ol>
@@ -193,6 +194,7 @@ __BODY__
 
 <script>
 const TAGS = __TAGS_JSON__;
+const HAS_URLS = !!document.querySelector("figure[data-src]");
 const LINK = __LINK_JSON__;
 const statusEl = document.getElementById("status");
 function say(msg) { statusEl.textContent = msg; }
@@ -218,11 +220,28 @@ function buildCopyNode() {
   const clone = document.getElementById("post-body").cloneNode(true);
   clone.querySelectorAll(".save-photo").forEach(b => b.remove());
   clone.querySelectorAll("figure").forEach(fig => {
-    const p = document.createElement("p");
-    p.setAttribute("style", "text-align:center;color:#1f7a53;font-weight:700");
-    const cap = fig.dataset.caption ? " · " + fig.dataset.caption : "";
-    p.textContent = "📷 사진 " + fig.dataset.n + cap;
-    fig.replaceWith(p);
+    const cap = fig.dataset.caption || "";
+    if (fig.dataset.src) {
+      // 공개 주소의 사진은 네이버 에디터가 받아서 본문에 넣어 준다.
+      const wrap = document.createElement("div");
+      const pi = document.createElement("p");
+      pi.setAttribute("style", "text-align:center");
+      const img = document.createElement("img");
+      img.src = fig.dataset.src; img.alt = cap || ("사진 " + fig.dataset.n);
+      img.setAttribute("style", "max-width:100%");
+      pi.appendChild(img); wrap.appendChild(pi);
+      if (cap) {
+        const pc = document.createElement("p");
+        pc.setAttribute("style", "text-align:center;color:#888888;font-size:14px");
+        pc.textContent = cap; wrap.appendChild(pc);
+      }
+      fig.replaceWith(...wrap.childNodes);
+    } else {
+      const p = document.createElement("p");
+      p.setAttribute("style", "text-align:center;color:#1f7a53;font-weight:700");
+      p.textContent = "📷 사진 " + fig.dataset.n + (cap ? " · " + cap : "");
+      fig.replaceWith(p);
+    }
   });
   const stage = document.createElement("div");
   stage.className = "copy-stage"; stage.appendChild(clone);
@@ -241,7 +260,7 @@ document.getElementById("copy-body").addEventListener("click", async () => {
       "text/html": new Blob([htmlText], { type: "text/html" }),
       "text/plain": new Blob([plain], { type: "text/plain" }),
     })]);
-    say("본문 복사됨. 붙여넣은 뒤 📷 사진 N 자리에 사진을 넣어 주세요.");
+    say(HAS_URLS ? "본문 복사됨 (사진 포함). 블로그 본문에 붙여넣어 보세요." : "본문 복사됨. 붙여넣은 뒤 📷 사진 N 자리에 사진을 넣어 주세요.");
     stage.remove();
   } catch (e) {
     selectNode(body);
@@ -290,10 +309,41 @@ async function savePhoto(n) {
 """
 
 
+def public_photo_urls(post_dir: Path) -> dict[int, str]:
+    """푸시된 커밋에 들어 있는 사진의 공개 주소(raw.githubusercontent.com)를 만든다.
+
+    네이버 에디터는 페이지 속 사진(data:)은 버리지만, 공개 주소의 사진은 받아 준다.
+    커밋 SHA로 주소를 고정해 두면 브랜치가 지워져도 사진이 남는다.
+    """
+    import subprocess
+
+    def git(*a):
+        return subprocess.run(["git", *a], capture_output=True, text=True, cwd=post_dir).stdout.strip()
+
+    remote = git("remote", "get-url", "origin")
+    m = re.search(r"github\.com[:/]([^/]+)/([^/.]+)", remote)
+    sha = git("rev-parse", "HEAD")
+    if not m or not sha:
+        return {}
+    # 원격에 올라간 커밋인지 확인 (안 올라갔으면 주소가 열리지 않는다)
+    if not git("branch", "-r", "--contains", sha):
+        return {}
+    top = Path(git("rev-parse", "--show-toplevel"))
+    urls = {}
+    for f in sorted((post_dir / "photos").glob("photo_*.*")):
+        rel = f.resolve().relative_to(top).as_posix()
+        if not git("ls-tree", "--full-tree", "--name-only", sha, "--", rel):
+            continue
+        n = int(re.search(r"photo_(\d+)", f.name).group(1))
+        urls[n] = f"https://raw.githubusercontent.com/{m.group(1)}/{m.group(2)}/{sha}/{rel}"
+    return urls
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("post_dir")
     parser.add_argument("--link", default="")
+    parser.add_argument("--no-public-photos", action="store_true", help="사진 공개 주소를 쓰지 않음")
     args = parser.parse_args()
 
     post_dir = Path(args.post_dir)
@@ -304,7 +354,10 @@ def main() -> int:
     tags = re.findall(r"#(\S+)", lines[tag_idx]) if tag_idx is not None else []
     body_lines = [l for i, l in enumerate(lines) if not l.startswith("# ") and i != tag_idx]
 
-    body, missing = render_body(body_lines, post_dir / "photos", args.link or "[상품 링크]")
+    photo_urls = public_photo_urls(post_dir) if not args.no_public_photos else {}
+    if not photo_urls:
+        print("사진 공개 주소 없음: 복사본에는 📷 사진 N 자리 표시만 들어갑니다. (사진을 커밋·푸시한 뒤 다시 실행)", file=sys.stderr)
+    body, missing = render_body(body_lines, post_dir / "photos", args.link or "[상품 링크]", photo_urls)
     body = body.replace('<p style="text-align:center">이 포스팅은', '<p class="disclosure" style="margin:0 0 24px;padding:14px 12px;border:2px solid #e8590c;border-radius:4px;color:#e8590c;font-size:18px;font-weight:700;line-height:1.6;text-align:center">이 포스팅은', 1)
     photo_count = body.count("<figure")
     cta_count = body.count('class="product-link"')
