@@ -146,7 +146,7 @@ article ul, article ol { margin: 0 0 1.1em; padding-left: 1.3em }
 figure { margin: 1.4em 0; text-align: center }
 figure img { width: 100%; max-width: 100%; height: auto; border-radius: 6px; display: block }
 figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
-.disclosure { font-size: 14px; color: var(--muted); background: var(--soft); border-radius: 8px; padding: 10px 12px }
+.disclosure { margin: 0 0 1.6em }
 .product-link { margin: 1.4em 0; text-align: center }
 .product-link a { display: inline-block; color: var(--accent); background: var(--soft); border-radius: 8px; padding: 10px 16px; text-decoration: none; word-break: keep-all }
 .missing { color: #c0392b }
@@ -239,7 +239,7 @@ def main() -> int:
     body_lines = [l for i, l in enumerate(lines) if not l.startswith("# ") and i != tag_idx]
 
     body, missing = render_body(body_lines, post_dir / "photos", args.link or "[상품 링크]")
-    body = body.replace("<p>이 포스팅은", '<p class="disclosure">이 포스팅은', 1)
+    body = body.replace("<p>이 포스팅은", '<p class="disclosure" style="margin:0 0 24px;padding:14px 12px;border:2px solid #e8590c;border-radius:4px;color:#e8590c;font-size:18px;font-weight:700;line-height:1.6;text-align:center">이 포스팅은', 1)
     photo_count = body.count("<figure")
     cta_count = body.count('class="product-link"')
 
