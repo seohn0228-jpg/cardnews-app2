@@ -71,6 +71,7 @@ def fetch_product(url: str, timeout: float = 10.0) -> ProductInfo:
         info.error = f"페이지를 불러오지 못했습니다: {e}"
         return info
 
+    resp.encoding = "utf-8"
     html = resp.text
     soup = BeautifulSoup(html, "html.parser")
 
