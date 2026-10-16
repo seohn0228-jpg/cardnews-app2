@@ -143,7 +143,8 @@ python3 $S/seo_check.py $P/post.md --keyword "<메인>" --sub "<서브1>,<서브
 python3 $S/render_preview.py $P --link "<상품 링크>"
 ```
 - `$P/preview.html`에 사진이 본문 제자리에 들어간 페이지가 만들어진다(본문/제목/태그/링크 복사 버튼 포함).
-- Artifact 도구로 발행한다(처음엔 icon `document`). 같은 상품을 고칠 땐 같은 파일 경로로 다시 발행해 링크를 유지한다.
+- Artifact 도구로 발행한다(처음엔 icon `document`, `capabilities: {"downloads": true}` — 사진 저장 버튼용).
+- 네이버 에디터는 페이지 속 사진을 붙여넣지 못한다. 본문 복사본에는 사진 대신 `📷 사진 N · 캡션` 줄이 들어가고, 사용자는 '사진 N장 저장'으로 받은 photo_NN.jpg를 그 자리에 넣는다. 결과 전달 때 이 순서를 안내한다. 같은 상품을 고칠 땐 같은 파일 경로로 다시 발행해 링크를 유지한다.
 
 ## 6. 결과 전달
 
