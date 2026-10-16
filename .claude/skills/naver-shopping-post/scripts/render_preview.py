@@ -18,6 +18,7 @@ from pathlib import Path
 from PIL import Image
 
 PHOTO_RE = re.compile(r"^\[사진\s*(\d+)\s*(?::\s*(.*?))?\]\s*$")
+LINK_RE = re.compile(r"^\[상품\s*링크\s*(?::\s*(.*?))?\]\s*$")
 MAX_WIDTH = 900
 
 
@@ -83,10 +84,11 @@ def render_body(lines: list[str], photos_dir: Path, link: str) -> tuple[str, lis
             cap = f"<figcaption>{inline(caption)}</figcaption>" if caption else ""
             alt = inline(caption or f"사진 {n}")
             out.append(f'<figure data-n="{n}"><img src="{uri}" alt="{alt}">{cap}</figure>')
-        elif stripped == "[상품 링크]":
+        elif LINK_RE.match(stripped):
             flush_para(); flush_list()
+            label = (LINK_RE.match(stripped).group(1) or "").strip() or "👉 상품 페이지 바로가기"
             safe = html.escape(link, quote=True)
-            out.append(f'<p class="product-link"><a href="{safe}" target="_blank" rel="noopener">{inline(link)}</a></p>')
+            out.append(f'<p class="product-link"><a href="{safe}" target="_blank" rel="noopener"><b>{inline(label)}</b></a></p>')
         elif stripped.startswith("## "):
             flush_para(); flush_list()
             out.append(f"<h2>{inline(stripped[3:])}</h2>")
@@ -145,7 +147,8 @@ figure { margin: 1.4em 0; text-align: center }
 figure img { width: 100%; max-width: 100%; height: auto; border-radius: 6px; display: block }
 figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
 .disclosure { font-size: 14px; color: var(--muted); background: var(--soft); border-radius: 8px; padding: 10px 12px }
-.product-link a { color: var(--accent); word-break: break-all }
+.product-link { margin: 1.4em 0; text-align: center }
+.product-link a { display: inline-block; color: var(--accent); background: var(--soft); border-radius: 8px; padding: 10px 16px; text-decoration: none; word-break: keep-all }
 .missing { color: #c0392b }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 26px }
 .tags span { background: var(--soft); border-radius: 999px; padding: 3px 10px; font-size: 14px }
@@ -165,7 +168,8 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
     <ol class="steps">
       <li><b>PC</b>: 블로그 글쓰기를 열고 제목 복사 → 붙여넣기, 본문 복사 → 본문에 붙여넣기. 사진이 같이 들어가는지 확인하세요.</li>
       <li><b>사진이 빠지면</b>: 아래 원고의 사진을 길게 누르거나 우클릭해 저장한 뒤, 같은 자리에 넣으면 됩니다.</li>
-      <li>상품 링크 자리에 링크를 넣고, 태그를 붙여넣고, <b>발행은 직접</b> 눌러 주세요.</li>
+      <li>본문의 👉 링크 안내 __CTA_COUNT__곳에 상품 링크가 걸렸는지 확인하세요. 안 걸렸으면 문구를 선택하고 '상품 링크 복사'로 링크를 넣으면 돼요.</li>
+      <li>태그를 붙여넣고 <b>발행은 직접</b> 눌러 주세요.</li>
     </ol>
   </section>
 
@@ -237,12 +241,14 @@ def main() -> int:
     body, missing = render_body(body_lines, post_dir / "photos", args.link or "[상품 링크]")
     body = body.replace("<p>이 포스팅은", '<p class="disclosure">이 포스팅은', 1)
     photo_count = body.count("<figure")
+    cta_count = body.count('class="product-link"')
 
     import json
     page = (PAGE
             .replace("__TITLE_SHORT__", html.escape(title.split(",")[0][:30] or "블로그 원고"))
             .replace("__TITLE__", html.escape(title))
             .replace("__PHOTO_COUNT__", str(photo_count))
+            .replace("__CTA_COUNT__", str(cta_count))
             .replace("__TAG_CHIPS__", "".join(f"<span>#{html.escape(t)}</span>" for t in tags))
             .replace("__TAGS_JSON__", json.dumps(tags, ensure_ascii=False))
             .replace("__LINK_JSON__", json.dumps(args.link, ensure_ascii=False))
