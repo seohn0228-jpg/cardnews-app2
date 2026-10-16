@@ -177,7 +177,7 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
     <ol class="steps">
       <li><b>사진 저장</b>: '사진 __PHOTO_COUNT__장 저장'을 눌러 휴대폰에 저장해요(사진마다 저장 창이 떠요). 버튼이 안 보이면 아래 사진을 길게 눌러 저장하세요.</li>
       <li><b>글 붙여넣기</b>: 블로그 글쓰기에서 제목 복사 → 붙여넣기, 본문 복사 → 본문에 붙여넣기.</li>
-      <li><b>사진</b>: 본문 복사에 사진이 같이 들어가요. 붙여넣은 뒤 사진이 빠진 자리가 있으면, 저장한 같은 번호 사진(photo_01, photo_02…)을 그 자리에 넣어 주세요.</li>
+      <li><b>사진 넣기</b>: 붙여넣은 본문에 <b>📷 [사진 N] 여기에 photo_0N 넣기</b> 줄이 보여요. 그 줄을 지우고 같은 번호 사진을 넣으면 돼요.</li>
       <li>👉 링크 안내 __CTA_COUNT__곳 밑에 상품 주소가 한 줄씩 들어가 있어요. 블로그에 붙여넣으면 주소가 링크로 바뀌는지 확인하고, 글자로만 남아 있으면 주소 끝에 커서를 두고 엔터를 한 번 눌러 주세요.</li>
       <li>태그를 붙여넣고 <b>발행은 직접</b> 눌러 주세요.</li>
     </ol>
@@ -194,7 +194,7 @@ __BODY__
 
 <script>
 const TAGS = __TAGS_JSON__;
-const KEEP_EMBEDDED = true;
+const KEEP_EMBEDDED = false;
 const HAS_URLS = KEEP_EMBEDDED || !!document.querySelector("figure[data-src]");
 const LINK = __LINK_JSON__;
 const statusEl = document.getElementById("status");
@@ -245,8 +245,9 @@ function buildCopyNode() {
       fig.replaceWith(...wrap.childNodes);
     } else {
       const p = document.createElement("p");
-      p.setAttribute("style", "text-align:center;color:#1f7a53;font-weight:700");
-      p.textContent = "📷 사진 " + fig.dataset.n + (cap ? " · " + cap : "");
+      p.setAttribute("style", "text-align:center;color:#1f7a53;font-weight:700;font-size:17px");
+      const nn = String(fig.dataset.n).padStart(2, "0");
+      p.textContent = "📷 [사진 " + fig.dataset.n + "] 여기에 photo_" + nn + " 넣기" + (cap ? " · " + cap : "");
       fig.replaceWith(p);
     }
   });
@@ -350,7 +351,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("post_dir")
     parser.add_argument("--link", default="")
-    parser.add_argument("--no-public-photos", action="store_true", help="사진 공개 주소를 쓰지 않음")
+    parser.add_argument("--public-photos", action="store_true", help="복사본에 사진 공개 주소를 넣음(실험용)")
     args = parser.parse_args()
 
     post_dir = Path(args.post_dir)
@@ -361,9 +362,8 @@ def main() -> int:
     tags = re.findall(r"#(\S+)", lines[tag_idx]) if tag_idx is not None else []
     body_lines = [l for i, l in enumerate(lines) if not l.startswith("# ") and i != tag_idx]
 
-    photo_urls = public_photo_urls(post_dir) if not args.no_public_photos else {}
-    if not photo_urls:
-        print("사진 공개 주소 없음: 복사본에는 📷 사진 N 자리 표시만 들어갑니다. (사진을 커밋·푸시한 뒤 다시 실행)", file=sys.stderr)
+    # 네이버 앱은 복사한 사진을 받지 못한다(사용자 확인). 기본은 사진 자리 표시 + 사진 저장 버튼.
+    photo_urls = public_photo_urls(post_dir) if args.public_photos else {}
     body, missing = render_body(body_lines, post_dir / "photos", args.link or "[상품 링크]", photo_urls)
     body = body.replace('<p style="text-align:center">이 포스팅은', '<p class="disclosure" style="margin:0 0 24px;padding:14px 12px;border:2px solid #e8590c;border-radius:4px;color:#e8590c;font-size:18px;font-weight:700;line-height:1.6;text-align:center">이 포스팅은', 1)
     photo_count = body.count("<figure")
