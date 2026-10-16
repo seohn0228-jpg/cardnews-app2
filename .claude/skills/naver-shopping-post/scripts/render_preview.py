@@ -54,13 +54,13 @@ def render_body(lines: list[str], photos_dir: Path, link: str) -> tuple[str, lis
 
     def flush_para():
         if para:
-            out.append("<p>" + "<br>".join(inline(l) for l in para) + "</p>")
+            out.append('<p style="text-align:center">' + "<br>".join(inline(l) for l in para) + "</p>")
             para.clear()
 
     def flush_list():
         nonlocal list_tag
         if list_items:
-            out.append(f"<{list_tag}>" + "".join(f"<li>{inline(i)}</li>" for i in list_items) + f"</{list_tag}>")
+            out.append(f'<{list_tag} style="text-align:center;list-style-position:inside;padding-left:0">' + "".join(f"<li>{inline(i)}</li>" for i in list_items) + f"</{list_tag}>")
             list_items.clear()
             list_tag = ""
 
@@ -91,7 +91,7 @@ def render_body(lines: list[str], photos_dir: Path, link: str) -> tuple[str, lis
             out.append(f'<p class="product-link"><a href="{safe}" target="_blank" rel="noopener"><b>{inline(label)}</b></a></p>')
         elif stripped.startswith("## "):
             flush_para(); flush_list()
-            out.append(f"<h2>{inline(stripped[3:])}</h2>")
+            out.append(f'<h2 style="text-align:center">{inline(stripped[3:])}</h2>')
         elif ul or ol:
             flush_para()
             tag = "ul" if ul else "ol"
@@ -139,7 +139,7 @@ button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px }
 .steps { margin: 0; padding-left: 1.3em; color: var(--muted); font-size: 14px; line-height: 1.7 }
 .steps b { color: var(--ink) }
 article { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 28px clamp(16px, 5vw, 44px) 36px; min-width: 0 }
-.post-title { font-family: var(--display); font-size: clamp(22px, 5.4vw, 30px); line-height: 1.4; margin: 0 0 22px; text-wrap: balance }
+.post-title { text-align: center; font-family: var(--display); font-size: clamp(22px, 5.4vw, 30px); line-height: 1.4; margin: 0 0 22px; text-wrap: balance }
 article p { margin: 0 0 1.1em }
 article h2 { font-size: 19px; margin: 1.9em 0 .7em; padding-bottom: 6px; border-bottom: 2px solid var(--soft) }
 article ul, article ol { margin: 0 0 1.1em; padding-left: 1.3em }
@@ -150,7 +150,7 @@ figcaption { font-size: 14px; color: var(--muted); margin-top: 8px }
 .product-link { margin: 1.4em 0; text-align: center }
 .product-link a { display: inline-block; color: var(--accent); background: var(--soft); border-radius: 8px; padding: 10px 16px; text-decoration: none; word-break: keep-all }
 .missing { color: #c0392b }
-.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 26px }
+.tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 26px }
 .tags span { background: var(--soft); border-radius: 999px; padding: 3px 10px; font-size: 14px }
 @media (prefers-reduced-motion: no-preference) { button { transition: filter .15s } button:hover { filter: brightness(1.05) } }
 </style>
@@ -239,7 +239,7 @@ def main() -> int:
     body_lines = [l for i, l in enumerate(lines) if not l.startswith("# ") and i != tag_idx]
 
     body, missing = render_body(body_lines, post_dir / "photos", args.link or "[상품 링크]")
-    body = body.replace("<p>이 포스팅은", '<p class="disclosure" style="margin:0 0 24px;padding:14px 12px;border:2px solid #e8590c;border-radius:4px;color:#e8590c;font-size:18px;font-weight:700;line-height:1.6;text-align:center">이 포스팅은', 1)
+    body = body.replace('<p style="text-align:center">이 포스팅은', '<p class="disclosure" style="margin:0 0 24px;padding:14px 12px;border:2px solid #e8590c;border-radius:4px;color:#e8590c;font-size:18px;font-weight:700;line-height:1.6;text-align:center">이 포스팅은', 1)
     photo_count = body.count("<figure")
     cta_count = body.count('class="product-link"')
 
