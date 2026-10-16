@@ -25,6 +25,7 @@ AI_PHRASES = [
     "완벽한", "혁신적인", "살펴보겠습니다", "마무리하자면", "에 대해 알아", "도움이 되셨기를",
 ]
 PHOTO_RE = re.compile(r"^\[사진\s*(\d+)[^\]]*\]\s*$")
+LINK_RE = re.compile(r"^\[상품\s*링크[^\]]*\]\s*$")
 
 
 def parse(text: str) -> dict:
@@ -35,10 +36,13 @@ def parse(text: str) -> dict:
     body_lines = [l for i, l in enumerate(lines) if not l.startswith("# ") and i != tag_idx]
     headings = [l for l in body_lines if l.startswith("## ")]
     photos = [l for l in body_lines if PHOTO_RE.match(l.strip())]
+    links = [l for l in body_lines if LINK_RE.match(l.strip())]
     prose = "\n".join(
-        l for l in body_lines if not l.startswith("## ") and not PHOTO_RE.match(l.strip())
+        l for l in body_lines
+        if not l.startswith("## ") and not PHOTO_RE.match(l.strip()) and not LINK_RE.match(l.strip())
     )
-    return {"title": title, "tags": tags, "headings": headings, "photos": photos, "prose": prose, "lines": body_lines}
+    return {"title": title, "tags": tags, "headings": headings, "photos": photos, "links": links,
+            "prose": prose, "lines": body_lines}
 
 
 def check(text: str, keyword: str, subs: list[str]) -> list[dict]:
@@ -73,6 +77,10 @@ def check(text: str, keyword: str, subs: list[str]) -> list[dict]:
 
     add("소제목 수", 3 <= len(p["headings"]) <= 7, f"{len(p['headings'])}개 (권장 3~7개)", "권장")
     add("사진 수", len(p["photos"]) >= 4, f"{len(p['photos'])}장 (권장 4장 이상, 직접 찍은 사진이 가장 좋음)", "권장")
+    add("상품 링크 안내", 2 <= len(p["links"]) <= 4, f"{len(p['links'])}곳 (권장 3곳: 소개 직후, 가격/단점 직후, 마지막)", "권장")
+    labels = [LINK_RE.match(l.strip()) and l.strip() for l in p["links"]]
+    if len(labels) != len(set(labels)):
+        add("링크 안내 문구 중복", False, "같은 문구가 반복됩니다. 위치마다 다르게 써 주세요", "권장")
     add("태그 수", 5 <= len(p["tags"]) <= 30, f"{len(p['tags'])}개 (권장 10개 안팎, 최대 30개)", "권장")
 
     found = [ph for ph in AI_PHRASES if ph in p["prose"]]
