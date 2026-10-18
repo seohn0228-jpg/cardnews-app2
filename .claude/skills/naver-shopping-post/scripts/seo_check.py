@@ -24,6 +24,12 @@ AI_PHRASES = [
     "알아보겠습니다", "결론적으로", "요약하자면", "것이 중요합니다", "다양한", "효과적인",
     "완벽한", "혁신적인", "살펴보겠습니다", "마무리하자면", "에 대해 알아", "도움이 되셨기를",
 ]
+# 여러 글에서 반복돼 식상해진 표현 (글마다 새 문장으로 쓴다)
+STOCK_PHRASES = [
+    "궁금한 점은 댓글로", "좋은 얘기만 하면 광고 같으니까", "걸리는 점도 적어 볼게요", "어떤 제품이냐면요",
+    "이런 분께 맞을 것 같아요", "이런 분께 맞아요", "마음이 기울었어요", "여기 둘게요", "여기 남겨 둘게요",
+    "가격이랑 쿠폰은 자주 바뀌더라고요", "상세페이지 사진이 더 잘 보이더라고요", "꼼꼼히 뜯어봤어요",
+]
 PHOTO_RE = re.compile(r"^\[사진\s*(\d+)[^\]]*\]\s*$")
 LINK_RE = re.compile(r"^\[상품\s*링크[^\]]*\]\s*$")
 
@@ -104,6 +110,29 @@ def check(text: str, keyword: str, subs: list[str]) -> list[dict]:
     return results
 
 
+def overlap_with_other_posts(post_path: Path) -> dict:
+    """같은 posts/ 폴더의 다른 원고와 똑같은 문장이 있는지 찾는다."""
+    def sentences(text):
+        out = set()
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith(("#", "[", "태그", "이 포스팅은", "-")) or re.match(r"^\d+\.", line):
+                continue
+            norm = re.sub(r"\s+", " ", line)
+            if len(norm) >= 10:
+                out.add(norm)
+        return out
+
+    mine = sentences(post_path.read_text(encoding="utf-8"))
+    dupes = {}
+    for other in post_path.parent.parent.glob("*/post.md"):
+        if other.resolve() == post_path.resolve():
+            continue
+        for s in mine & sentences(other.read_text(encoding="utf-8")):
+            dupes.setdefault(s, other.parent.name)
+    return dupes
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("post")
@@ -114,6 +143,15 @@ def main() -> int:
     text = Path(args.post).read_text(encoding="utf-8")
     subs = [s.strip() for s in args.sub.split(",") if s.strip()]
     results = check(text, args.keyword, subs)
+    dupes = overlap_with_other_posts(Path(args.post))
+    results.append({
+        "항목": "다른 글과 같은 문장",
+        "결과": "통과" if not dupes else "수정 필요",
+        "내용": "없음" if not dupes else " / ".join(f"'{k}' ({v})" for k, v in list(dupes.items())[:6]),
+    })
+    stock = [ph for ph in STOCK_PHRASES if ph in text]
+    results.append({"항목": "반복되는 상투구", "결과": "통과" if not stock else "수정 필요",
+                    "내용": ", ".join(stock) if stock else "없음"})
     print(json.dumps(results, ensure_ascii=False, indent=2))
     return 1 if any(r["결과"] == "수정 필요" for r in results) else 0
 
