@@ -31,7 +31,9 @@ python3 $S/product_scraper.py "<링크>" --out $P
 - 쇼핑커넥트 링크(brandconnect.naver.com/affiliates/...)는 자바스크립트로 이동하는 중간 페이지라 정보가 없다.
   `https://gw-brandconnect.naver.com/affiliate/query/redirect/<affiliates 뒤 숫자>?channelProductNo=<번호>`에
   리다이렉트를 따라가지 않고 요청하면 Location 헤더에 실제 스마트스토어 주소가 나온다.
-- 스마트스토어가 429(접속 과다)로 막으면, 네이버 검색으로 상품명을 확인한 뒤 브랜드 공식몰 상세페이지를
+- 스마트스토어가 429로 막히면 **먼저 네이버 선물샵 페이지** `https://shopping.naver.com/gift/products/<같은 상품번호>`를
+  Playwright로 연다. 상품명·가격·리뷰·상품정보 제공고시·전성분·상세 이미지가 대부분 그대로 나온다(실제로 잘 열림).
+- 선물샵도 안 되면, 네이버 검색으로 상품명을 확인한 뒤 브랜드 공식몰 상세페이지를
   Playwright(Chromium: /opt/pw-browsers)로 열어 상품정보 제공고시와 상세 이미지를 가져온다.
   이 경우 링크 상품의 가격·구성이 다를 수 있다고 결과에 꼭 적는다.
 - 그래도 실패하면(네트워크 차단 등) 사용자에게 **상세페이지 글 복사본과 사진 캡처를 올려 달라고 한 번만** 요청하고, 받은 것으로 계속한다.
