@@ -5,7 +5,7 @@
   "product_name": "LG 프라엘 수퍼폼 써마샷 얼티밋",
   "price": {
     "권장소비자가": "599,000원",
-    "공식몰 할인가(2026-10-16)": "539,000원"
+    "네이버 판매가(2026-10-30)": "496,000원 (17% 할인, 무료배송, 정품 앰플 증정 옵션)"
   },
   "specs": {
     "크기": "36.5 x 43 x 178 mm",
@@ -32,7 +32,8 @@
   ],
   "sources": [
     "https://lgpralofficial.co.kr/product/detail.html?product_no=175",
-    "https://www.lg.co.kr/media/release/29461"
+    "https://www.lg.co.kr/media/release/29461",
+    "https://shopping.naver.com/gift/products/12533459263"
   ],
   "photos": {
     "photo_01.png": "스마트스토어 대표 이미지(캡 닫힘/열림)",
@@ -40,5 +41,8 @@
     "photo_03.jpg": "추천 조합 GLOW+PORE / FIRM+JAW",
     "photo_04.jpg": "3중 감지 센서",
     "photo_05.jpg": "사용법 HOW TO USE"
-  }
+  },
+  "rating": 4.79,
+  "reviews": 5393,
+  "product_name_store": "[N단독기획/정품앰플증정] LG 프라엘 탄력 모공 고주파 멀티 디바이스 써마샷 얼티밋 197g"
 }
