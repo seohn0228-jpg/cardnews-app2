@@ -37,6 +37,8 @@ python3 $S/product_scraper.py "<링크>" --out $P
   여행 페이지는 모바일 UA로 Playwright에서 열고 끝까지 스크롤해 일정표·포함/불포함·취소 규정·리뷰 요약까지 가져온다.
 - 스마트스토어가 429로 막히면 **먼저 네이버 선물샵 페이지** `https://shopping.naver.com/gift/products/<같은 상품번호>`를
   Playwright로 연다. 상품명·가격·리뷰·상품정보 제공고시·전성분·상세 이미지가 대부분 그대로 나온다(실제로 잘 열림).
+- 선물샵이 410/"상품이 존재하지 않습니다"면 N배송 상품 페이지 `https://shopping.naver.com/logistics/products/<같은 상품번호>`를 Playwright로 연다.
+  어느 주소가 맞는지 모르겠으면 `search.naver.com`에서 상품번호로 검색해 결과 링크 중 상품번호가 들어간 shopping.naver.com 주소를 찾는다.
 - 선물샵도 안 되면, 네이버 검색으로 상품명을 확인한 뒤 브랜드 공식몰 상세페이지를
   Playwright(Chromium: /opt/pw-browsers)로 열어 상품정보 제공고시와 상세 이미지를 가져온다.
   이 경우 링크 상품의 가격·구성이 다를 수 있다고 결과에 꼭 적는다.
