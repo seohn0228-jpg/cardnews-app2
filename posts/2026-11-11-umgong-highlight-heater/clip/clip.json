@@ -1,0 +1,108 @@
+{
+  "voice": "ko-KR-SunHiNeural",
+  "rate": "+12%",
+  "badge": "광고 · 쇼핑커넥트",
+  "scenes": [
+    {
+      "photo": "clip/img/00.jpg",
+      "headline": "히터 전기세\n걱정된다면?",
+      "headline_highlight": [
+        "전기세"
+      ],
+      "say": "히터 살 때, 전기세부터 걱정되죠?",
+      "highlight": [
+        "전기세"
+      ]
+    },
+    {
+      "photo": "clip/img/34.jpg",
+      "headline": "360도로 퍼지는 열",
+      "headline_highlight": [
+        "360도"
+      ],
+      "say": "이 히터는 열을 360도 사방으로 내보내요. 최대 33제곱미터까지요.",
+      "highlight": [
+        "360도",
+        "33제곱미터"
+      ]
+    },
+    {
+      "photo": "clip/img/26.jpg",
+      "headline": "절전 모드면\n한 달 8천원대",
+      "headline_highlight": [
+        "8천원대"
+      ],
+      "say": "절전 모드로 하루 8시간 쓰면, 한 달 약 8천 2백 원. 세게 틀면 더 나와요.",
+      "highlight": [
+        "8천 2백 원",
+        "절전 모드"
+      ]
+    },
+    {
+      "photo": "clip/img/44.jpg",
+      "headline": "온도 9단 · 화력 5단",
+      "headline_highlight": [
+        "9단",
+        "5단"
+      ],
+      "say": "온도 9단, 화력 5단, 타이머는 24시간까지.",
+      "highlight": [
+        "9단",
+        "5단",
+        "24시간"
+      ]
+    },
+    {
+      "photo": "clip/img/07.jpg",
+      "headline": "리모컨으로 편하게",
+      "say": "리모컨으로 소파에서 바로 조절하고,",
+      "highlight": [
+        "리모컨"
+      ]
+    },
+    {
+      "photo": "clip/img/08.jpg",
+      "headline": "3.9kg, 들고 옮기기",
+      "headline_highlight": [
+        "3.9kg"
+      ],
+      "say": "3.9킬로그램이라 들고 옮기기 쉬워요.",
+      "highlight": [
+        "3.9킬로그램"
+      ]
+    },
+    {
+      "photo": "clip/img/05.jpg",
+      "headline": "넘어지면 자동으로 OFF",
+      "headline_highlight": [
+        "OFF"
+      ],
+      "say": "넘어지면 자동으로 꺼지는 안전장치도 있어요.",
+      "highlight": [
+        "안전장치"
+      ]
+    },
+    {
+      "photo": "clip/img/03.jpg",
+      "headline": "할인가 · 이벤트는\n쇼핑 스티커에서",
+      "headline_highlight": [
+        "쇼핑 스티커"
+      ],
+      "say": "할인가랑 이벤트는 쇼핑 스티커에서 확인하세요.",
+      "highlight": [
+        "쇼핑 스티커"
+      ]
+    }
+  ],
+  "upload": {
+    "title": "히터 전기세 걱정될 때 볼 하이라이트 히터",
+    "description": "엄공 하이라이트 히터 27년형, 전기세·안전·편의 기능만 30초로 정리했어요.\n절전 모드(200W) 기준 한 달 약 8,260원, 최대 소비전력은 1.8kW예요.\n이 영상은 네이버 쇼핑 커넥트 활동의 일환으로, 판매 발생 시 수수료를 제공받습니다.",
+    "hashtags": [
+      "엄공히터",
+      "하이라이트히터",
+      "전기히터추천",
+      "전기난로",
+      "겨울필수템"
+    ]
+  }
+}
