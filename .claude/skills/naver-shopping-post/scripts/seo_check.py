@@ -89,7 +89,7 @@ def check(text: str, keyword: str, subs: list[str]) -> list[dict]:
 
     add("소제목 수", 3 <= len(p["headings"]) <= 7, f"{len(p['headings'])}개 (권장 3~7개)", "권장")
     add("사진 수", 4 <= len(p["photos"]) <= 5, f"{len(p['photos'])}장 (4~5장, 핵심 포인트만)")
-    add("상품 링크 안내", 2 <= len(p["links"]) <= 4, f"{len(p['links'])}곳 (권장 3곳: 소개 직후, 가격/단점 직후, 마지막)", "권장")
+    add("상품 링크 안내", 2 <= len(p["links"]) <= 4, f"{len(p['links'])}곳 (권장 3곳: 소개 직후, 가격/구매 팁 직후, 마지막)", "권장")
     labels = [LINK_RE.match(l.strip()) and l.strip() for l in p["links"]]
     if len(labels) != len(set(labels)):
         add("링크 안내 문구 중복", False, "같은 문구가 반복됩니다. 위치마다 다르게 써 주세요", "권장")
