@@ -7,7 +7,7 @@
 
 clip.json 예:
 {
-  "voice": "fr-FR-VivienneMultilingualNeural", "rate": "+0%",
+  "voice": "fr-FR-VivienneMultilingualNeural", "rate": "+15%",
   "badge": "광고 · 쇼핑커넥트",
   "scenes": [
     {"photo": "photos/photo_01.jpg", "headline": "히터 전기세\\n한 달 8천원대?",
@@ -42,8 +42,8 @@ FONT_URLS = {
 }
 YELLOW = (255, 214, 64)
 ACCENT = (255, 112, 67)
-GAP = 0.35          # 장면 사이 쉼(초)
-FADE = 0.3          # 장면 전환(초)
+GAP = 0.18          # 장면 사이 쉼(초)
+FADE = 0.25         # 장면 전환(초)
 
 
 def ensure_fonts():
@@ -335,7 +335,7 @@ def main():
     C = P / "clip"
     cfg = json.loads((C / "clip.json").read_text(encoding="utf-8"))
     voice = a.voice or cfg.get("voice", "fr-FR-VivienneMultilingualNeural")
-    rate = a.rate or cfg.get("rate", "+0%")
+    rate = a.rate or cfg.get("rate", "+15%")
     seed = a.seed if a.seed is not None else sum(map(ord, P.name)) % 7
     ensure_fonts()
     work = C / "_work"
