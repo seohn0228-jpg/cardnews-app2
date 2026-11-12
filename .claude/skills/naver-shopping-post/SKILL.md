@@ -208,7 +208,7 @@ python3 $S/render_preview.py $P --link "<상품 링크>"
    - 마지막 장면: "할인가랑 이벤트는 쇼핑 스티커에서 확인하세요" 같은 안내(재촉하지 않기).
    - `upload`: 클립 제목(20자 안팎, 검색어 포함), 설명(대가성 문구 반드시 포함), 해시태그 4~6개.
    - 여행 상품은 장면 순서를 일정 순서로, 마지막에 "출발일별 가격은 쇼핑 스티커에서".
-3. 실행: `python3 scripts/make_clip.py $P` (음성: edge-tts 신경망 음성. **기본은 사용자가 고른 fr-FR-VivienneMultilingualNeural(비비안, 여성), 속도 +15%(사용자 지시: 조금 빠르게)**. clip.json의 voice에도 이걸 쓴다. 다른 목소리는 사용자가 요청할 때만).
+3. 실행: `python3 scripts/make_clip.py $P` (음성: edge-tts 신경망 음성. **기본은 사용자가 고른 fr-FR-VivienneMultilingualNeural(비비안, 여성), 속도 +7%(사용자 지시: +0%는 느리고 +15%는 빠름)**. clip.json의 voice에도 이걸 쓴다. 다른 목소리는 사용자가 요청할 때만).
    edge-tts가 없으면 `pip install edge-tts`. 배경음은 스크립트가 직접 합성(저작권 문제 없음), 말할 때 자동으로 작아진다.
 4. 확인: ffmpeg로 4~6개 시점의 프레임을 뽑아 Read로 보고, 글자가 사진·서로 겹치지 않는지, 자막이 말 단위로 자연스럽게 끊기는지 본다.
 5. 전달: SendUserFile로 `clip.mp4`, `cover.jpg`, `upload.txt`를 보낸다. 올리는 방법을 짧게 안내한다:
