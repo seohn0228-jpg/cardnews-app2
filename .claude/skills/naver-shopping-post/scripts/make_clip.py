@@ -282,6 +282,22 @@ def wrap(text, fnt, maxw):
     return out
 
 
+def attach_punct(words, text):
+    """음성 엔진이 단어에서 문장부호를 빼고 줄 때, 원문을 보고 다시 붙인다."""
+    out, pos = [], 0
+    for s, e, w in words:
+        i = text.find(w, pos)
+        if i < 0:
+            out.append((s, e, w))
+            continue
+        j = i + len(w)
+        while j < len(text) and text[j] in ".?!,~":
+            j += 1
+        out.append((s, e, text[i:j]))
+        pos = j
+    return out
+
+
 def chunk_words(words, max_chars=15):
     """단어 타이밍을 자막 덩어리로 묶는다."""
     chunks, cur = [], []
@@ -336,7 +352,7 @@ def main():
         dur = len(pcm) / SR
         sc["_start"], sc["_voice"] = t, dur
         sc["_end"] = t + dur + GAP
-        sc["_subs"] = [(t + s, t + e, txt) for s, e, txt in chunk_words(words)]
+        sc["_subs"] = [(t + s, t + e, txt) for s, e, txt in chunk_words(attach_punct(words, sc["say"]))]
         voice_track.append((t, pcm))
         t = sc["_end"]
     total = t + 0.6

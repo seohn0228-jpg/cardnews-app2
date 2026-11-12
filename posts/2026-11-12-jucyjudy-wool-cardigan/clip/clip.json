@@ -1,0 +1,28 @@
+{
+  "voice": "fr-FR-VivienneMultilingualNeural",
+  "rate": "+0%",
+  "badge": "광고 · 쇼핑커넥트",
+  "scenes": [
+    {"photo": "clip/img/00.jpg", "mode": "cover", "headline": "가디건 하나로\n일주일 코디", "headline_highlight": ["일주일 코디"],
+     "say": "아침엔 춥고 낮엔 덥죠? 이럴 땐 가디건 하나면 돼요.", "highlight": ["가디건 하나"]},
+    {"photo": "clip/img/02.jpg", "mode": "cover", "headline": "쥬시쥬디 울블렌드 가디건", "headline_highlight": ["울블렌드"],
+     "say": "쥬시쥬디 울블렌드 니트 가디건, 라운드넥에 단추가 달린 기본 디자인이에요.", "highlight": ["울블렌드", "라운드넥"]},
+    {"photo": "clip/img/06.jpg", "mode": "cover", "headline": "월요일엔 블랙", "headline_highlight": ["블랙"],
+     "say": "출근하는 날엔 블랙에 흰 이너로 단정하게.", "highlight": ["블랙"]},
+    {"photo": "clip/img/08.jpg", "mode": "cover", "headline": "수요일엔 그레이", "headline_highlight": ["그레이"],
+     "say": "그레이는 핑크 바지랑 입으면 부드러워 보여요.", "highlight": ["그레이"]},
+    {"photo": "clip/img/04.jpg", "mode": "cover", "headline": "금요일엔 민트", "headline_highlight": ["민트"],
+     "say": "민트는 브라운 팬츠랑 맞추면 세련돼 보이고요.", "highlight": ["민트"]},
+    {"photo": "clip/img/03.jpg", "mode": "cover", "headline": "주말엔 올리브", "headline_highlight": ["올리브"],
+     "say": "올리브는 아이보리 바지랑, 가을 분위기 그대로예요.", "highlight": ["올리브"]},
+    {"photo": "clip/img/01.jpg", "mode": "cover", "headline": "사이즈 잘 맞아요 87%", "headline_highlight": ["87%"],
+     "say": "리뷰에선 사이즈가 잘 맞는다는 평이 87퍼센트였어요.", "highlight": ["87퍼센트"]},
+    {"photo": "clip/img/09.jpg", "mode": "cover", "headline": "5가지 색 · 할인가는\n쇼핑 스티커에서", "headline_highlight": ["쇼핑 스티커"],
+     "say": "다섯 가지 색이랑 할인가는 쇼핑 스티커에서 확인하세요.", "highlight": ["쇼핑 스티커"]}
+  ],
+  "upload": {
+    "title": "가디건 하나로 일주일 코디, 5가지 색",
+    "description": "쥬시쥬디 울블렌드 니트 가디건, 블랙·그레이·올리브·민트·베리 톤으로 요일별 코디를 정리했어요.\n이 영상은 네이버 쇼핑 커넥트 활동의 일환으로, 판매 발생 시 수수료를 제공받습니다.",
+    "hashtags": ["쥬시쥬디가디건", "가디건코디", "여성니트가디건", "울가디건", "가을코디", "데일리룩"]
+  }
+}
